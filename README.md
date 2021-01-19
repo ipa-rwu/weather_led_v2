@@ -2,5 +2,10 @@
 Modify IKEA ball lamp, it can show weather
 
 ## Result
-![Turn on](1.gif)
-![forecast tommorrow](2.gif)
+<p align="center">
+  <img src="doc/1.GIF" width="350" title="Turn on">
+</p>
+
+<p align="center">
+  <img src="doc/2.GIF" width="350" title="forecast tommorrow">
+</p>
