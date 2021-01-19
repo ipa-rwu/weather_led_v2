@@ -113,7 +113,6 @@ void LedClass::led_condition(long now, int duration, int weather_id){
     _last_show_weather = now;
     _show_condition_enable = true;
     _saturation = 300;
-    fade_all();
     Serial.println("condition led on");
     if (weather_id == 800){
       _hue = 60;

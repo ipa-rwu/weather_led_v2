@@ -7,13 +7,14 @@
 #include "readWeatherClass.hpp"
 #include "mqttClass.hpp"
 #include "config.hpp"
-
+#include "secret.hpp"
 //button
 ReadButtonClass *button_obj = new ReadButtonClass();
 bool button_mode;
 ReadButtonClass::button_t read_button;
 int pre_button_count;
 long last_blink_time;
+bool push_long_button_enable;
 
 // led
 led_status_t led_status;
@@ -21,6 +22,7 @@ led_status_t pre_led_status;
 LedClass::colorHSV_t color_black;
 int led_state = LED_OFF;
 int led_blink_time = LED_BLINK_TIME;
+int color_change_h;
 
 //weather class
 ReadWeatherClass *weather_obj = new ReadWeatherClass();
@@ -36,15 +38,15 @@ long last_show_weather_forecast_now;
 int show_weather_duration;
 int show_forecast_duration;
 
-// wifi
-const char* _ssid = "";
-const char* _password =""; 
+//wifi create scret.hpp put this two lines
+//const char* _ssid = "";
+//const char* _password =
 int try_wifi;
 
 // MQTT
 WiFiClient espClient;
 PubSubClient client(espClient);
-const char* mqtt_server_ip = "";
+const char* mqtt_server_ip = "192.168.0.52";
 const int   mqtt_server_port = 1883;
 const char* mqtt_client_name = "weather_client";
 
@@ -54,6 +56,8 @@ MQTTClass *mqtt_obj = new MQTTClass(espClient);
 const char* topic_weather = "lamp/weather"; 
 const char* topic_clock = "/clock/onoff";
 const char* topic_cloud = "cloud/onoff";
+const char* topic_color = "lamp/color";
+const char* topic_color_colock = "/clock/onoff";
 
 //led
 LedClass *led_obj = new LedClass();
@@ -66,6 +70,7 @@ void setup() {
   read_button.count = 0;
   read_button.result = 0;
   pre_button_count = 0;
+  push_long_button_enable = false;
   
   int try_wifi = 0;
   WiFi.mode(WIFI_STA);
@@ -102,6 +107,7 @@ void setup() {
   pre_button_count = 0;
   pre_led_status = led_status;
   led_obj->fade_all();
+  color_change_h = led_obj->color_hsv.h;
 
   //init weather
   weather_data.temp = 0;
@@ -214,6 +220,48 @@ void loop() {
     mqtt_obj->publish(topic_cloud, weather_msg); //Topic name 
     led_obj->fade_all();
     led_status = LED_OFF;
+  }
+//  if(led_status == LED_ON && read_button.result >= 5)
+
+  if(read_button.result >= 5)
+  {
+    if(led_status != CHANGE_COLOR)
+    {
+      pre_led_status = led_status;
+      led_status = CHANGE_COLOR;
+    }
+    Serial.println("will change color");
+    push_long_button_enable = true;
+    button_mode = false;
+  }
+
+  if(led_status == CHANGE_COLOR){
+    int push_button = 0;
+    button_mode == false;
+    push_button = button_obj->long_button(push_long_button_enable);
+    if(push_long_button_enable == true && push_button == 1){
+      Serial.println("change color");
+      color_change_h ++;
+      if(color_change_h == 255){
+        color_change_h = 0;
+      }
+      led_obj->led_change_color(color_change_h, led_obj->color_hsv.s, led_obj->color_hsv.v);
+      char color_msg[50];
+      snprintf(color_msg, 50, "color: %d,%d,%d", color_change_h, led_obj->color_hsv.s, led_obj->color_hsv.v);  
+      mqtt_obj->publish(topic_color_colock, color_msg); //Topic name 
+      button_mode == false;
+    }
+    if(push_long_button_enable == false){
+      Serial.println("stop color");
+      button_mode = true;
+      led_status = pre_led_status;
+      if(led_status == LED_OFF){
+        led_obj->fade_all();
+      }
+      else{
+        led_obj->color_hsv.h = color_change_h;
+      }
+    }
   }
 
   if(led_status == LED_ON && read_button.result == 1){

@@ -2,7 +2,7 @@
 
 ReadButtonClass::ReadButtonClass(){
   // button will be able to be read for 3000 ms
-  _enable_duration = 3000; 
+  _enable_duration = BUTTON_ENABLE_TIME; 
   _result_button = 0;
   _count_button = 0;
   _signal_start = 0;
@@ -11,6 +11,7 @@ ReadButtonClass::ReadButtonClass(){
   _wait_time = 600;
 
   _button_pin = 15;
+  _push_time = 0;
 }
 
 ReadButtonClass::~ReadButtonClass(){
@@ -107,4 +108,46 @@ ReadButtonClass::button_t ReadButtonClass::readbutton(int led_blink_time, bool s
     }
     
   }
+}
+
+// non block function
+int ReadButtonClass::long_button(bool &long_button_mode)
+{
+  int button_value_current = digitalRead(_button_pin);
+  long now = millis();
+  _push_time = 0;  
+  if(_signal_start == false){ 
+    delay(100);
+    button_value_current = digitalRead(_button_pin);
+    if(button_value_current == 1){
+      _signal_start = true;
+      long_button_mode = true;
+      _start_count_time = now;
+      Serial.println("start long button");
+      _push_time = 1;
+      return _push_time;
+    }
+    else{
+      _push_time = 0;
+      long_button_mode = false;
+      return _push_time; 
+    }
+  }
+  else{
+    if(button_value_current == 1){
+      if((now - _start_count_time)%50 == 0){
+      _push_time = 1;
+      return _push_time;
+      }
+    }
+    else{
+      _signal_start = false;
+      long_button_mode = false;
+      Serial.print("stop long button: ");
+      Serial.println(long_button_mode);
+      _push_time = 0;
+      return _push_time;
+    }
+  }
+  return _push_time;
 }

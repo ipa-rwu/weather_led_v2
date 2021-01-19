@@ -9,3 +9,7 @@ Modify IKEA ball lamp, it can show weather
 <p align="center">
   <img src="doc/2.GIF" width="350" title="forecast tommorrow">
 </p>
+
+<p align="center">
+  <img src="doc/3.GIF" width="350" title="change color">
+</p>

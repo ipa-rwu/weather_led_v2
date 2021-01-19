@@ -29,6 +29,8 @@ class ReadButtonClass{
 
   button_t readbutton(int led_blink_time, bool signal_button_mode);
 
+  int long_button(bool &long_button_mode);
+
   private:
     int _enable_duration;
     int _result_button;
@@ -36,6 +38,8 @@ class ReadButtonClass{
     int _wait_time;
 
     int _button_pin;
+
+    int _push_time;
 
     bool _signal_start; 
 
