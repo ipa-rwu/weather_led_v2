@@ -11,5 +11,5 @@ Modify IKEA ball lamp, it can show weather
 </p>
 
 <p align="center">
-  <img src="doc/3.GIF" width="350" title="change color">
+  <img src="doc/3.gif" width="350" title="change color">
 </p>
